@@ -19,7 +19,7 @@ File Validator catches them instantly.
 
 ## Quick Install
 ```bash
-git clone https://github.com/YOUR-USERNAME/file-validator.git
+git clone https://github.com/AnasRm01/file-validator.git
 cd file-validator
 sudo ./install.sh
 ```
