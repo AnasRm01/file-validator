@@ -1,1 +1,2 @@
 inotify>=0.2.10
+pyyaml>=5.4.0
