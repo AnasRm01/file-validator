@@ -37,20 +37,31 @@ Traditional antivirus may miss these. **File Validator catches them instantly.**
 
 ## 🐧 Linux Installation
 
-### Quick Install (One Command)
+### One-Command Install (Recommended)
+```bash
+curl -sSL https://raw.githubusercontent.com/AnasRm01/file-validator/main/install.sh | sudo bash
+```
+
+**What gets installed:**
+- Main program: `/usr/local/bin/file-validator`
+- Service: `/etc/systemd/system/file-validator.service`
+- Config: `/etc/file-validator/config.yaml`
+- Quarantine: `/var/quarantine/`
+- Python dependencies: `inotify`, `pyyaml`
+
+**Supported:** Ubuntu, Debian, CentOS, RHEL, Fedora, Rocky Linux, AlmaLinux
+
+**Installation size:** ~50KB (plus ~5MB Python dependencies)
+
+---
+
+### Alternative: Download and Run
 ```bash
 curl -sSL https://raw.githubusercontent.com/AnasRm01/file-validator/main/install.sh -o install.sh
 sudo bash install.sh
 ```
 
-**Supported:** Ubuntu, Debian, CentOS, RHEL, Fedora, Rocky Linux, AlmaLinux
-
-### Alternative: Clone and Install
-```bash
-git clone https://github.com/AnasRm01/file-validator.git
-cd file-validator
-sudo ./install.sh
-```
+---
 
 ### Verify Installation
 ```bash
@@ -61,76 +72,145 @@ sudo systemctl status file-validator
 sudo tail -f /var/log/file-validator.log
 ```
 
+---
+
 ### Test Detection
 ```bash
 # Create a fake malicious file
 echo "%PDF-1.4 fake" > /tmp/test.jpg
 
-# Check detection
+# Wait 2 seconds and check logs
+sleep 2
 sudo tail /var/log/file-validator.log
 ```
+
+**Expected output:**
+```json
+{
+  "event_type": "FILE_EXTENSION_MISMATCH",
+  "severity": "HIGH",
+  "data": {
+    "filepath": "/tmp/test.jpg",
+    "claimed_extension": "jpg",
+    "actual_type": "pdf",
+    "file_hash_sha256": "abc123..."
+  }
+}
+```
+
+---
 
 ### Configuration
 ```bash
 # Edit settings
 sudo nano /etc/file-validator/config.yaml
+
+# Restart after changes
+sudo systemctl restart file-validator
 ```
+
+---
 
 ### Uninstall
 ```bash
-cd file-validator
-sudo ./uninstall.sh
+# Stop and remove service
+sudo systemctl stop file-validator
+sudo systemctl disable file-validator
+sudo rm /etc/systemd/system/file-validator.service
+sudo rm /usr/local/bin/file-validator
+sudo rm -rf /etc/file-validator
+sudo rm -rf /var/quarantine
+sudo rm /var/log/file-validator.log
 ```
-
-**📖 [Linux Full Documentation →](docs/LINUX.md)**
 
 ---
 
 ## 🪟 Windows Installation
 
-### Quick Install
+### One-Command Install (Recommended)
 
-**Step 1:** Download and extract
-```cmd
-git clone https://github.com/AnasRm01/file-validator.git
-cd file-validator
+**Step 1:** Download installer (Run PowerShell as Administrator)
+```powershell
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/AnasRm01/file-validator/main/install-windows.bat" -OutFile "install.bat"
 ```
 
-**Step 2:** Run installer
+**Step 2:** Run installer (Right-click → Run as Administrator)
 ```cmd
-install-windows.bat
+install.bat
 ```
+
+**What gets installed:**
+- Main program: `%USERPROFILE%\FileValidator\file-validator.py`
+- Config: `%USERPROFILE%\file-validator-config.yaml`
+- Logs: `%USERPROFILE%\file-validator.log`
+- Quarantine: `%USERPROFILE%\file-validator-quarantine\`
+- Python dependencies: `watchdog`, `pyyaml`, `pywin32`
 
 **Supported:** Windows 7/8/10/11, Windows Server 2012+
 
-### Verify Installation
+**Installation size:** ~100KB (plus ~10MB Python dependencies)
+
+---
+
+### Alternative: Git Clone Method
 ```cmd
-# Program should start automatically
-# Check log file
+git clone https://github.com/AnasRm01/file-validator.git
+cd file-validator
+install-windows.bat
+```
+
+---
+
+### Verify Installation
+
+Program should start automatically after installation.
+
+Check log file:
+```cmd
 notepad %USERPROFILE%\file-validator.log
 ```
+
+---
 
 ### Test Detection
 ```cmd
-# Create test file
 cd %USERPROFILE%\Downloads
 echo %PDF-1.4 fake > test.jpg
 
-# Check log
+REM Wait 2 seconds, then check log
+timeout /t 2
 notepad %USERPROFILE%\file-validator.log
 ```
+
+**Expected output:**
+```json
+{
+  "event_type": "FILE_EXTENSION_MISMATCH",
+  "severity": "HIGH",
+  "data": {
+    "filepath": "C:\\Users\\...\\test.jpg",
+    "claimed_extension": "jpg",
+    "actual_type": "pdf"
+  }
+}
+```
+
+---
 
 ### Configuration
 ```cmd
 # Edit settings
 notepad %USERPROFILE%\file-validator-config.yaml
+
+# Restart File Validator
+# (Close and run start-file-validator.bat again)
 ```
+
+---
 
 ### Run as Service
 
-See [Windows Service Setup](docs/WINDOWS.md#run-as-service)
-
-**📖 [Windows Full Documentation →](docs/WINDOWS.md)**
+See [Windows Service Setup](README_WINDOWS.md#run-as-service) for running File Validator as a Windows Service.
 
 ---
 
@@ -168,7 +248,7 @@ filebeat.inputs:
 </localfile>
 ```
 
-**📖 [SIEM Integration Guide →](docs/SIEM.md)**
+**Full SIEM Integration Guide:** See [docs/SIEM.md](docs/SIEM.md) (coming soon)
 
 ---
 
@@ -192,16 +272,6 @@ filebeat.inputs:
 
 ---
 
-## 📖 Documentation
-
-- **[Linux Guide](docs/LINUX.md)** - Installation, configuration, troubleshooting
-- **[Windows Guide](docs/WINDOWS.md)** - Installation, configuration, service setup
-- **[SIEM Integration](docs/SIEM.md)** - Splunk, ELK, Wazuh, QRadar setup
-- **[Configuration](docs/CONFIG.md)** - YAML configuration reference
-- **[API Reference](docs/API.md)** - Log format and fields
-
----
-
 ## ❓ FAQ
 
 **Q: Does this replace antivirus?**  
@@ -218,6 +288,12 @@ A:
 - **Linux servers** → Use Linux version
 - **Windows workstations** → Use Windows version
 - **Both** → Install on both!
+
+**Q: What files are installed on my system?**  
+A:
+- **Linux:** Only the main program, config, service file, and quarantine directory (~50KB)
+- **Windows:** Only the main program, config, and quarantine directory (~100KB)
+- **No source code, documentation, or extra files are installed**
 
 ---
 
@@ -242,6 +318,7 @@ Contributions welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) first.
 - ✅ Added user attribution
 - ✅ Added YAML configuration
 - ✅ Windows support
+- ✅ Auto-download installers
 
 ### v1.0 - 2026-02-06
 - ✅ Initial release
