@@ -216,13 +216,27 @@ install_program() {
     echo ""
     echo -e "${YELLOW}[4/8]${NC} Installing File Validator..."
     
-    # Copy main program
+    # Check if file exists locally first
     if [ ! -f "file_validator.py" ]; then
-        print_error "file_validator.py not found in current directory"
-        exit 1
+        print_warning "Downloading File Validator from GitHub..."
+        
+        # Download from GitHub
+        curl -sSL https://raw.githubusercontent.com/AnasRm01/file-validator/main/file_validator.py -o /tmp/file_validator.py
+        
+        if [ ! -f /tmp/file_validator.py ]; then
+            print_error "Failed to download file_validator.py"
+            print_info "Please check your internet connection"
+            exit 1
+        fi
+        
+        # Use downloaded file
+        cp /tmp/file_validator.py /usr/local/bin/file-validator
+        rm /tmp/file_validator.py
+    else
+        # Use local file
+        cp file_validator.py /usr/local/bin/file-validator
     fi
     
-    cp file_validator.py /usr/local/bin/file-validator
     chmod +x /usr/local/bin/file-validator
     
     # Make it executable with proper shebang
@@ -230,7 +244,6 @@ install_program() {
     
     print_success "Program installed to /usr/local/bin/file-validator"
 }
-
 # ============================================================================
 # CREATE DIRECTORIES
 # ============================================================================
