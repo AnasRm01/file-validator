@@ -1,290 +1,276 @@
 # 🛡️ File Validator
 
-**Lightweight security tool that detects files with mismatched extensions and magic numbers in real-time**
+**Professional file extension validation tool that detects malware hiding behind fake extensions**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Linux](https://img.shields.io/badge/Platform-Linux-blue.svg)](https://www.linux.org/)
-[![Windows](https://img.shields.io/badge/Platform-Windows-0078D6.svg)](https://www.microsoft.com/windows)
-[![Python](https://img.shields.io/badge/Python-3.6+-green.svg)](https://www.python.org/)
+Catch attackers who rename `ransomware.exe` → `invoice.pdf` in real-time.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Linux](https://img.shields.io/badge/Platform-Linux-blue.svg)](#-linux-installation)
+[![Windows](https://img.shields.io/badge/Platform-Windows-0078D6.svg)](#-windows-installation)
 
 ---
 
 ## 🚨 The Problem
 
 Attackers disguise malicious files by changing extensions:
-- `ransomware.exe` → renamed to → `invoice.pdf`
-- `malware.js` → renamed to → `report.docx`  
-- `trojan.sh` → renamed to → `data.txt`
+```
+ransomware.exe  →  invoice.pdf
+malware.js      →  report.docx
+trojan.sh       →  data.txt
+```
 
-**Traditional antivirus may miss these. File Validator catches them instantly.**
+Traditional antivirus may miss these. **File Validator catches them instantly.**
 
 ---
 
-## ✨ Features
+## ✨ Key Features
 
-### Core Features
-- ⚡ **Real-time detection** - Event-driven, no CPU-heavy scanning
-- 🪶 **Lightweight** - <10MB memory, <1% CPU usage
-- 🎯 **Accurate** - Uses industry-standard magic number validation
-- 📊 **SIEM-ready** - JSON logging for Splunk, ELK, QRadar, Wazuh
-
-### Advanced Features (Windows v1.1)
+- ⚡ **Real-time detection** - Event-driven monitoring (<1% CPU)
 - 🔒 **Automatic quarantine** - Isolates suspicious files
-- 🔐 **SHA256 hashing** - For malware analysis & VirusTotal lookup
-- 👤 **User attribution** - Track who created the file
-- ⚙️ **YAML configuration** - Easy customization
-- 📋 **Forensic metadata** - Complete incident response data
+- 📊 **SIEM integration** - JSON logs for Splunk, ELK, Wazuh, QRadar
+- 🔐 **File hashing** - SHA256 for malware analysis
+- 👤 **User tracking** - Know who created suspicious files
+- ⚙️ **Configurable** - YAML configuration file
+- 🪶 **Lightweight** - <10MB memory usage
 
 ---
 
-## 🚀 Quick Install
+## 🐧 Linux Installation
 
-### 🐧 Linux
+### Quick Install (One Command)
+```bash
+curl -sSL https://raw.githubusercontent.com/AnasRm01/file-validator/main/install.sh -o install.sh
+sudo bash install.sh
+```
+
+**Supported:** Ubuntu, Debian, CentOS, RHEL, Fedora, Rocky Linux, AlmaLinux
+
+### Alternative: Clone and Install
 ```bash
 git clone https://github.com/AnasRm01/file-validator.git
 cd file-validator
 sudo ./install.sh
 ```
 
-**Features:** Real-time monitoring, systemd service, syslog integration
-
----
-
-### 🪟 Windows
-```cmd
-git clone https://github.com/AnasRm01/file-validator.git
-cd file-validator
-install-windows.bat
-```
-
-**Features:** Quarantine, SIEM logging, SHA256 hashing, user tracking
-
-**[📖 Full Windows Documentation →](README-WINDOWS.md)**
-
----
-
-## 📋 Comparison: Linux vs Windows
-
-| Feature | Linux | Windows |
-|---------|-------|---------|
-| Real-time monitoring | ✅ inotify | ✅ watchdog |
-| Automatic quarantine | ✅ v1.1 | ✅ v1.1 |
-| SIEM JSON logging | ✅ v1.1 | ✅ v1.1 |
-| File hashing | ✅ SHA256 | ✅ SHA256 |
-| User attribution | ✅ v1.1 | ✅ v1.1 |
-| Configuration file | ✅ YAML | ✅ YAML |
-| Auto-start | ✅ systemd | ✅ Service/Task |
-
----
-
-## 🎬 Demo
+### Verify Installation
 ```bash
-# Create a fake PDF (actually contains executable code)
-echo "MZ fake exe" > malware.pdf
-
-# File Validator immediately detects it:
-# 🚨 MISMATCH DETECTED: /home/user/malware.pdf
-#   File header: 4d 5a 20 66 61 6b 65
-#   Extension: .pdf
-#   Actual type: exe
-```
-
----
-
-## 📖 Linux Usage
-
-**Check status:**
-```bash
+# Check service status
 sudo systemctl status file-validator
-```
 
-**View logs:**
-```bash
+# View logs
 sudo tail -f /var/log/file-validator.log
 ```
 
-**Test detection:**
+### Test Detection
 ```bash
-echo "%PDF-1.4" > test.jpg  # Will trigger detection
+# Create a fake malicious file
+echo "%PDF-1.4 fake" > /tmp/test.jpg
+
+# Check detection
+sudo tail /var/log/file-validator.log
 ```
 
-**Uninstall:**
+### Configuration
 ```bash
+# Edit settings
+sudo nano /etc/file-validator/config.yaml
+```
+
+### Uninstall
+```bash
+cd file-validator
 sudo ./uninstall.sh
 ```
 
-**Configuration:**  
-Edit monitored paths in `/usr/local/bin/file-validator`
+**📖 [Linux Full Documentation →](docs/LINUX.md)**
 
 ---
 
-## 📖 Windows Usage
+## 🪟 Windows Installation
 
-**Start monitoring:**
+### Quick Install
+
+**Step 1:** Download and extract
 ```cmd
-python file_validator_windows.py
+git clone https://github.com/AnasRm01/file-validator.git
+cd file-validator
 ```
 
-**View logs:**
+**Step 2:** Run installer
 ```cmd
+install-windows.bat
+```
+
+**Supported:** Windows 7/8/10/11, Windows Server 2012+
+
+### Verify Installation
+```cmd
+# Program should start automatically
+# Check log file
 notepad %USERPROFILE%\file-validator.log
 ```
 
-**Configuration:**
+### Test Detection
 ```cmd
+# Create test file
+cd %USERPROFILE%\Downloads
+echo %PDF-1.4 fake > test.jpg
+
+# Check log
+notepad %USERPROFILE%\file-validator.log
+```
+
+### Configuration
+```cmd
+# Edit settings
 notepad %USERPROFILE%\file-validator-config.yaml
 ```
 
-**Quarantine location:**
-```cmd
-%USERPROFILE%\file-validator-quarantine
-```
+### Run as Service
 
-**Full Windows docs:** [README-WINDOWS.md](README-WINDOWS.md)
+See [Windows Service Setup](docs/WINDOWS.md#run-as-service)
+
+**📖 [Windows Full Documentation →](docs/WINDOWS.md)**
+
+---
+
+## 🔧 Supported File Types
+
+PDF, PNG, JPG/JPEG, GIF, ZIP, RAR, 7Z, ISO, TAR, GZ, BZ2, EXE, DLL, ELF, DOC, DOCX, XLSX, PPTX
 
 ---
 
 ## 📊 SIEM Integration
 
+File Validator outputs **structured JSON logs** compatible with enterprise SIEM platforms:
+
 ### Splunk
 ```conf
-# Linux
 [monitor:///var/log/file-validator.log]
-sourcetype = file_validator
-index = security
-
-# Windows
-[monitor://C:\Users\*\file-validator.log]
 sourcetype = json
 index = security
 ```
 
 ### ELK Stack (Filebeat)
 ```yaml
-# Linux
 filebeat.inputs:
 - type: log
   paths:
     - /var/log/file-validator.log
-  fields:
-    log_type: security
-
-# Windows  
-filebeat.inputs:
-- type: log
-  paths:
-    - C:\Users\*\file-validator.log
   json.keys_under_root: true
 ```
 
 ### Wazuh
 ```xml
 <localfile>
-  <log_format>syslog</log_format>
+  <log_format>json</log_format>
   <location>/var/log/file-validator.log</location>
 </localfile>
 ```
 
----
-
-## 🔧 Supported File Types
-
-PDF, PNG, JPG/JPEG, GIF, ZIP, RAR, 7Z, ISO, TAR, GZ, BZ2, EXE, DLL, DOC, DOCX, XLSX, PPTX
+**📖 [SIEM Integration Guide →](docs/SIEM.md)**
 
 ---
 
 ## 🏢 Use Cases
 
 ### Enterprise Security
-- 🌐 Monitor file uploads on web servers
-- 📁 Protect shared network drives  
-- 🔒 Detect ransomware before execution
-- 📋 Compliance logging (PCI-DSS, HIPAA, SOC 2)
+- Monitor file uploads on web servers
+- Protect shared network drives
+- Detect ransomware before execution
+- Compliance logging (PCI-DSS, HIPAA, SOC 2)
 
-### System Administrators
-- 👥 Monitor employee download folders
-- 🗂️ Validate file server uploads
-- ⚠️ Real-time security alerts
+### System Administration
+- Monitor employee download folders
+- Validate file server uploads
+- Real-time security alerts
 
 ### Security Research
-- 🔬 Analyze malware samples
-- 🕵️ Threat hunting
-- 📊 Behavioral analysis
+- Analyze malware samples
+- Threat hunting
+- Behavioral analysis
 
 ---
 
-## 🧪 Testing
+## 📖 Documentation
 
-**Quick test:**
-```bash
-# Linux
-echo "%PDF-1.4 fake" > test.jpg
-sudo tail -f /var/log/file-validator.log
-
-# Windows
-echo %PDF-1.4 fake > test.jpg
-notepad %USERPROFILE%\file-validator.log
-```
+- **[Linux Guide](docs/LINUX.md)** - Installation, configuration, troubleshooting
+- **[Windows Guide](docs/WINDOWS.md)** - Installation, configuration, service setup
+- **[SIEM Integration](docs/SIEM.md)** - Splunk, ELK, Wazuh, QRadar setup
+- **[Configuration](docs/CONFIG.md)** - YAML configuration reference
+- **[API Reference](docs/API.md)** - Log format and fields
 
 ---
 
 ## ❓ FAQ
 
 **Q: Does this replace antivirus?**  
-A: No, it's complementary. Use alongside traditional AV for layered security.
+A: No, it's complementary. Use alongside traditional antivirus for layered security.
 
 **Q: Performance impact?**  
-A: Minimal. Event-driven architecture means zero impact when idle.
+A: Minimal. Event-driven architecture means <1% CPU and <10MB RAM.
 
 **Q: Can attackers bypass this?**  
-A: Advanced attackers can craft files with fake magic numbers. This catches 95%+ of basic evasion techniques.
+A: Advanced attackers can craft files with fake magic numbers, but this catches 95%+ of basic evasion techniques.
 
-**Q: Which version should I use?**  
+**Q: Which platform should I use?**  
 A: 
-- **Linux servers** → Use Linux version (lightweight, production-ready)
-- **Windows workstations/servers** → Use Windows version (more features)
+- **Linux servers** → Use Linux version
+- **Windows workstations** → Use Windows version
+- **Both** → Install on both!
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome!
+Contributions welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) first.
 
 **Areas for contribution:**
 - macOS support
-- Linux quarantine feature
+- Additional file type signatures
 - Web dashboard
-- More file type signatures
+- Machine learning detection
 
 ---
 
 ## 📝 Changelog
 
-### v1.1 (Windows) - 2026-02-08
+### v1.1 - 2026-02-08
 - ✅ Added automatic quarantine
-- ✅ Added SIEM-ready JSON logging  
+- ✅ Added SIEM-ready JSON logging
 - ✅ Added SHA256 file hashing
 - ✅ Added user attribution
 - ✅ Added YAML configuration
+- ✅ Windows support
 
 ### v1.0 - 2026-02-06
-- ✅ Initial release (Linux)
-- ✅ Real-time detection
+- ✅ Initial release
+- ✅ Real-time detection (Linux)
 - ✅ systemd service
 
 ---
 
 ## 📄 License
 
-MIT License - Free for personal and commercial use.
+MIT License - see [LICENSE](LICENSE) file
+
+Free for personal and commercial use.
 
 ---
 
 ## 🙏 Support
 
-- ⭐ **Star this repo** if it helped you!
+- ⭐ **Star this repo** if it helped you
 - 🐛 **Report bugs:** [GitHub Issues](https://github.com/AnasRm01/file-validator/issues)
 - 💡 **Feature requests:** [GitHub Issues](https://github.com/AnasRm01/file-validator/issues)
+
+---
+
+## 🔗 Quick Links
+
+- **GitHub:** https://github.com/AnasRm01/file-validator
+- **Issues:** https://github.com/AnasRm01/file-validator/issues
+- **Releases:** https://github.com/AnasRm01/file-validator/releases
 
 ---
 
